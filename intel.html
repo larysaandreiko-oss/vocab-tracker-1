@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Словарь: Criminal Minds — тренажёр</title>
+<style>
+  @import url('https://cdnjs.cloudflare.com/ajax/libs/source-serif-pro/3.6.4/source-serif-pro.min.css');
+
+  :root{
+    --paper:#EDE3CB;
+    --paper-card:#FBF6E9;
+    --ink:#2B2116;
+    --ink-soft:#5B4E3B;
+    --rust:#A6532E;
+    --rust-deep:#8A4224;
+    --sage:#6E7A52;
+    --sage-deep:#525C3D;
+    --line:#CBBE9C;
+    --good:#4C6B4F;
+    --bad:#A6392E;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    background-image:radial-gradient(rgba(43,33,22,0.035) 1px, transparent 1px);
+    background-size:3px 3px;
+    color:var(--ink);
+    font-family:"Source Serif Pro", Georgia, "Times New Roman", serif;
+    min-height:100vh;
+    padding:32px 16px 64px;
+    display:flex;
+    justify-content:center;
+  }
+  .sheet{width:100%; max-width:680px;}
+  header{margin-bottom:28px; border-bottom:2px solid var(--ink); padding-bottom:16px;}
+  header h1{font-size:1.7rem; font-weight:600; margin:0 0 4px; letter-spacing:0.2px;}
+  header p{margin:0; color:var(--ink-soft); font-size:0.95rem; font-style:italic;}
+
+  nav.tabs{display:flex; flex-wrap:wrap; gap:2px; margin-bottom:20px;}
+  nav.tabs button{
+    flex:1 1 auto; min-width:110px; padding:11px 8px;
+    font-family:inherit; font-size:0.92rem;
+    border:1px solid var(--ink); background:var(--paper); color:var(--ink-soft);
+    cursor:pointer; border-bottom:none; transition:background .15s, color .15s;
+  }
+  nav.tabs button:first-child{border-radius:4px 0 0 0;}
+  nav.tabs button:last-child{border-radius:0 4px 0 0;}
+  nav.tabs button.active{background:var(--paper-card); color:var(--ink); font-weight:600;}
+
+  .card{
+    background:var(--paper-card); border:1px solid var(--ink); border-radius:0 0 4px 4px;
+    padding:28px 26px; box-shadow:3px 3px 0 rgba(43,33,22,0.12); min-height:340px;
+    display:flex; flex-direction:column;
+  }
+
+  .progress-row{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:18px; font-size:0.85rem; color:var(--ink-soft);}
+  .progress-bar{height:4px; background:var(--line); border-radius:2px; overflow:hidden; margin-bottom:22px;}
+  .progress-fill{height:100%; background:var(--rust); transition:width .3s ease;}
+
+  .prompt-word{font-size:2rem; font-weight:600; margin:0 0 20px; color:var(--rust-deep);}
+  .options{display:flex; flex-direction:column; gap:10px; flex:1;}
+  .option{
+    text-align:left; padding:13px 16px; border:1px solid var(--line); border-radius:4px;
+    background:#fff; font-family:inherit; font-size:1rem; color:var(--ink); cursor:pointer;
+    transition:border-color .15s, background .15s;
+  }
+  .option:hover{border-color:var(--ink-soft);}
+  .option.correct{background:#E4EBDD; border-color:var(--good);}
+  .option.incorrect{background:#F3DEDA; border-color:var(--bad);}
+  .option:disabled{cursor:default;}
+
+  .sentence{font-size:1.1rem; line-height:1.75; margin-bottom:22px;}
+  .sentence .gap{display:inline-block; min-width:110px; border-bottom:2px solid var(--ink); text-align:center; font-style:italic; color:var(--ink-soft);}
+  .fill-input-row{display:flex; gap:10px; margin-top:auto;}
+  input[type="text"]{flex:1; padding:11px 14px; font-family:inherit; font-size:1rem; border:1px solid var(--ink-soft); border-radius:4px; background:#fff;}
+  input[type="text"]:focus{outline:2px solid var(--rust); outline-offset:1px;}
+
+  .btn{padding:11px 20px; font-family:inherit; font-size:0.95rem; font-weight:600; border:none; border-radius:4px; cursor:pointer; background:var(--rust); color:#fff; transition:background .15s;}
+  .btn:hover{background:var(--rust-deep);}
+  .btn.secondary{background:transparent; color:var(--ink-soft); border:1px solid var(--line);}
+  .btn.secondary:hover{background:rgba(0,0,0,0.03);}
+  .btn:disabled{opacity:0.4; cursor:default;}
+
+  .feedback{margin-top:14px; font-size:0.95rem; min-height:22px;}
+  .feedback.good{color:var(--good);}
+  .feedback.bad{color:var(--bad);}
+
+  .footer-row{display:flex; justify-content:space-between; align-items:center; margin-top:20px;}
+
+  .match-grid{display:grid; grid-template-columns:1fr 1fr; gap:20px; flex:1;}
+  .match-col{display:flex; flex-direction:column; gap:8px;}
+  .match-item{padding:12px 14px; border:1px solid var(--line); border-radius:4px; background:#fff; font-size:0.93rem; cursor:pointer; text-align:left; font-family:inherit;}
+  .match-item.selected{border-color:var(--rust); background:#FBEEE7;}
+  .match-item.matched{background:#E4EBDD; border-color:var(--good); color:var(--ink-soft); cursor:default;}
+  .match-item.wrong-flash{background:#F3DEDA; border-color:var(--bad);}
+
+  .story-text{font-size:1.02rem; line-height:2.2; text-align:left;}
+  .blank-wrap{display:inline-flex; align-items:baseline; gap:2px; margin:0 2px;}
+  .hint-letter{font-style:italic; color:var(--ink-soft); font-size:0.9em;}
+  .story-input{padding:2px 6px; font-family:inherit; font-size:0.95em; border:none; border-bottom:2px solid var(--ink-soft); background:transparent; color:var(--ink);}
+  .story-input:focus{outline:none; border-bottom-color:var(--rust);}
+  .story-input.correct{border-bottom-color:var(--good); background:#E4EBDD;}
+  .story-input.incorrect{border-bottom-color:var(--bad); background:#F3DEDA;}
+  .correct-hint{font-size:0.8em; color:var(--good); font-style:italic; margin-left:2px;}
+  .story-summary{background:var(--paper-card); border-bottom:1px dashed var(--line); padding-bottom:10px; margin-bottom:14px; font-size:0.9rem; color:var(--ink-soft);}
+  .story-actions{margin-top:20px; display:flex; justify-content:space-between; align-items:center;}
+
+  .results{text-align:center; margin:auto;}
+  .results .big{font-size:2.6rem; font-weight:600; color:var(--rust-deep); margin-bottom:6px;}
+  .results p{color:var(--ink-soft); margin-bottom:24px;}
+
+  @media (max-width:480px){
+    .match-grid{gap:10px;}
+    .match-item{font-size:0.82rem; padding:10px;}
+    .prompt-word{font-size:1.5rem;}
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <h1>Словарь: Criminal Minds</h1>
+    <p>25 слов · пять режимов тренировки</p>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab-btn active" data-mode="quiz">Тест</button>
+    <button class="tab-btn" data-mode="fill">Пропуски</button>
+    <button class="tab-btn" data-mode="match">Сопоставление</button>
+    <button class="tab-btn" data-mode="translate">Перевод</button>
+    <button class="tab-btn" data-mode="story">Рассказ</button>
+  </nav>
+
+  <div class="card" id="cardRoot"></div>
+</div>
+
+<script>
+const WORDS = [
+  {w:"implore", m:"умолять, заклинать", s:"She wanted to ___ him not to leave, but the words wouldn't come."},
+  {w:"contrition", m:"раскаяние, сокрушение о грехе", s:"There was no sign of ___ in his voice, only defiance."},
+  {w:"abasement", m:"унижение, самоуничижение", s:"He begged forgiveness with a kind of ritual ___."},
+  {w:"immutable", m:"неизменный, незыблемый", s:"To him, the rules of the Bureau were ___, never to be questioned."},
+  {w:"inundated", m:"заваленный, захлёстнутый (работой и т.п.)", s:"The tip line was ___ with calls within the hour."},
+  {w:"impale", m:"пронзать, насаживать на острое", s:"The killer would ___ small objects into the ground at every scene."},
+  {w:"round up", m:"собирать, сгонять в одно место; задерживать (облава)", s:"\"Let's ___ everybody for a briefing,\" Hotch said."},
+  {w:"compulsion", m:"навязчивое влечение, непреодолимое побуждение", s:"His ___ to return to each site was part of the ritual."},
+  {w:"pry", m:"вскрывать рычагом, взламывать", s:"Morgan had to ___ the rusted door open with a crowbar."},
+  {w:"stall", m:"тянуть время, затягивать", s:"\"Keep him on the line — ___ as long as you can,\" Hotch said."},
+  {w:"checkmate", m:"мат; окончательное поражение", s:"Once the trace came back, it was ___ — there was nowhere left to run."},
+  {w:"time-lapse", m:"таймлапс, ускоренная съёмка", s:"Garcia pulled up ___ footage of the parking lot."},
+  {w:"chapped", m:"потрескавшийся, обветренный (о коже)", s:"His lips were ___, cracked from days spent hiding outdoors."},
+  {w:"dexterous", m:"ловкий, искусный (особенно руками)", s:"His surprisingly ___ hands trembled slightly as he lit a cigarette."},
+  {w:"acquit", m:"оправдывать (в суде)", s:"The jury would later ___ him of the earlier charges."},
+  {w:"acquit oneself well", m:"достойно справиться, хорошо себя показать", s:"Reid managed to ___ during the questioning, steady and precise."},
+  {w:"henchmen", m:"приспешники, подручные", s:"A handful of ___ had helped him dispose of evidence over the years."},
+  {w:"annihilate", m:"уничтожать полностью, истреблять", s:"\"I could ___ every one of them,\" Morgan muttered."},
+  {w:"candy striper", m:"юная волонтёрка в больнице (США)", s:"She'd once worked as a ___ at the very hospital where the victim was born."},
+  {w:"twitchy", m:"нервный, дёрганый, взвинченный", s:"The suspect grew visibly ___ the moment Prentiss mentioned the hospital's name."},
+  {w:"tart", m:"вульгарная женщина (груб., разг.)", s:"\"Don't call her a ___,\" he snapped."},
+  {w:"hemp", m:"конопля (волокно/масло)", s:"Forensics confirmed the rope at the scene was woven from ___."},
+  {w:"reedy", m:"тонкий, пронзительный (о голосе)", s:"When he spoke again, his voice came out thin and ___."},
+  {w:"reticle", m:"прицельная сетка, перекрестие", s:"Through the rifle's ___, the team watched the house for any movement."},
+  {w:"broach", m:"поднимать, затрагивать (деликатную тему)", s:"None of them were sure how to ___ the subject of what came next."}
+];
+
+function isAnswerCorrect(rawInput, correctWord){
+  const val = rawInput.trim().toLowerCase().replace(/\s+/g," ").replace(/[.,!?;:]$/,"");
+  const base = correctWord.toLowerCase();
+  return val === base || val === base + "s" || val === base.replace(/e$/,"ing");
+}
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+let currentMode = "quiz";
+const root = document.getElementById("cardRoot");
+
+document.querySelectorAll(".tab-btn").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    currentMode = btn.dataset.mode;
+    startMode(currentMode);
+  });
+});
+
+/* ================= QUIZ MODE ================= */
+let quizOrder, quizIndex, quizScore;
+
+function startQuiz(){
+  quizOrder = shuffle(WORDS);
+  quizIndex = 0;
+  quizScore = 0;
+  renderQuizQuestion();
+}
+
+function renderQuizQuestion(){
+  if(quizIndex >= quizOrder.length){ renderResults(quizScore, quizOrder.length, startQuiz); return; }
+  const item = quizOrder[quizIndex];
+  const wrongPool = WORDS.filter(x=>x.w!==item.w);
+  const distractors = shuffle(wrongPool).slice(0,3).map(x=>x.m);
+  const options = shuffle([item.m, ...distractors]);
+
+  root.innerHTML = `
+    <div class="progress-row"><span>Вопрос ${quizIndex+1} из ${quizOrder.length}</span><span>Счёт: ${quizScore}</span></div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${(quizIndex/quizOrder.length)*100}%"></div></div>
+    <p class="prompt-word">${item.w}</p>
+    <div class="options">
+      ${options.map(o=>`<button class="option" data-correct="${o===item.m}">${o}</button>`).join("")}
+    </div>
+    <div class="feedback" id="qFeedback"></div>
+    <div class="footer-row"><span></span><button class="btn" id="nextBtn" disabled>Далее</button></div>
+  `;
+
+  const optBtns = root.querySelectorAll(".option");
+  optBtns.forEach(b=>{
+    b.addEventListener("click", ()=>{
+      optBtns.forEach(x=>x.disabled=true);
+      const fb = document.getElementById("qFeedback");
+      if(b.dataset.correct==="true"){
+        b.classList.add("correct");
+        fb.textContent = "Верно!";
+        fb.className = "feedback good";
+        quizScore++;
+      } else {
+        b.classList.add("incorrect");
+        optBtns.forEach(x=>{ if(x.dataset.correct==="true") x.classList.add("correct"); });
+        fb.textContent = "Правильный ответ выделен зелёным.";
+        fb.className = "feedback bad";
+      }
+      document.getElementById("nextBtn").disabled = false;
+    });
+  });
+
+  document.getElementById("nextBtn").addEventListener("click", ()=>{ quizIndex++; renderQuizQuestion(); });
+}
+
+/* ================= FILL IN THE BLANK ================= */
+let fillOrder, fillIndex, fillScore;
+
+function startFill(){
+  fillOrder = shuffle(WORDS);
+  fillIndex = 0;
+  fillScore = 0;
+  renderFillQuestion();
+}
+
+function renderFillQuestion(){
+  if(fillIndex >= fillOrder.length){ renderResults(fillScore, fillOrder.length, startFill); return; }
+  const item = fillOrder[fillIndex];
+  const sentenceHtml = item.s.replace("___", `<span class="gap">?</span>`);
+
+  root.innerHTML = `
+    <div class="progress-row"><span>Слово ${fillIndex+1} из ${fillOrder.length}</span><span>Счёт: ${fillScore}</span></div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${(fillIndex/fillOrder.length)*100}%"></div></div>
+    <p style="color:var(--ink-soft); margin-bottom:6px;">Значение: <strong style="color:var(--ink);">${item.m}</strong></p>
+    <p class="sentence">${sentenceHtml}</p>
+    <div class="fill-input-row">
+      <input type="text" id="fillInput" placeholder="Впиши слово..." autocomplete="off">
+      <button class="btn" id="checkBtn">Проверить</button>
+    </div>
+    <div class="feedback" id="fFeedback"></div>
+    <div class="footer-row"><span></span><button class="btn secondary" id="fNextBtn" style="display:none;">Далее</button></div>
+  `;
+
+  const input = document.getElementById("fillInput");
+  const checkBtn = document.getElementById("checkBtn");
+  const fb = document.getElementById("fFeedback");
+  const nextBtn = document.getElementById("fNextBtn");
+
+  function check(){
+    input.disabled = true;
+    checkBtn.disabled = true;
+    if(isAnswerCorrect(input.value, item.w)){
+      fb.textContent = "Верно!";
+      fb.className = "feedback good";
+      fillScore++;
+    } else {
+      fb.textContent = `Правильный ответ: ${item.w}`;
+      fb.className = "feedback bad";
+    }
+    nextBtn.style.display = "inline-block";
+  }
+
+  checkBtn.addEventListener("click", check);
+  input.addEventListener("keydown", e=>{ if(e.key==="Enter") check(); });
+  nextBtn.addEventListener("click", ()=>{ fillIndex++; renderFillQuestion(); });
+  input.focus();
+}
+
+/* ================= MATCHING ================= */
+let matchWords, matchDefs, matchSelectedWord, matchSelectedDef, matchedCount, matchTotal;
+
+function startMatch(){
+  const batch = shuffle(WORDS).slice(0,6);
+  matchWords = shuffle(batch);
+  matchDefs = shuffle(batch);
+  matchSelectedWord = null;
+  matchSelectedDef = null;
+  matchedCount = 0;
+  matchTotal = batch.length;
+  renderMatch();
+}
+
+function renderMatch(){
+  root.innerHTML = `
+    <div class="progress-row"><span>Сопоставлено: ${matchedCount} из ${matchTotal}</span></div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${(matchedCount/matchTotal)*100}%"></div></div>
+    <p style="color:var(--ink-soft); margin-bottom:14px; font-size:0.9rem;">Нажми на слово, затем на его перевод.</p>
+    <div class="match-grid">
+      <div class="match-col" id="wordCol">${matchWords.map(x=>`<button class="match-item" data-word="${x.w}">${x.w}</button>`).join("")}</div>
+      <div class="match-col" id="defCol">${matchDefs.map(x=>`<button class="match-item" data-word="${x.w}">${x.m}</button>`).join("")}</div>
+    </div>
+  `;
+
+  document.querySelectorAll("#wordCol .match-item").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      if(el.classList.contains("matched")) return;
+      document.querySelectorAll("#wordCol .match-item").forEach(x=>x.classList.remove("selected"));
+      el.classList.add("selected");
+      matchSelectedWord = el;
+      tryMatch();
+    });
+  });
+  document.querySelectorAll("#defCol .match-item").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      if(el.classList.contains("matched")) return;
+      document.querySelectorAll("#defCol .match-item").forEach(x=>x.classList.remove("selected"));
+      el.classList.add("selected");
+      matchSelectedDef = el;
+      tryMatch();
+    });
+  });
+}
+
+function tryMatch(){
+  if(!matchSelectedWord || !matchSelectedDef) return;
+  if(matchSelectedWord.dataset.word === matchSelectedDef.dataset.word){
+    matchSelectedWord.classList.remove("selected");
+    matchSelectedDef.classList.remove("selected");
+    matchSelectedWord.classList.add("matched");
+    matchSelectedDef.classList.add("matched");
+    matchedCount++;
+    matchSelectedWord = null;
+    matchSelectedDef = null;
+    document.querySelector(".progress-row span").textContent = `Сопоставлено: ${matchedCount} из ${matchTotal}`;
+    document.querySelector(".progress-fill").style.width = `${(matchedCount/matchTotal)*100}%`;
+    if(matchedCount === matchTotal){
+      setTimeout(()=>renderResults(matchTotal, matchTotal, startMatch, true), 500);
+    }
+  } else {
+    const w = matchSelectedWord, d = matchSelectedDef;
+    w.classList.add("wrong-flash");
+    d.classList.add("wrong-flash");
+    setTimeout(()=>{ w.classList.remove("selected","wrong-flash"); d.classList.remove("selected","wrong-flash"); }, 450);
+    matchSelectedWord = null;
+    matchSelectedDef = null;
+  }
+}
+
+/* ================= TRANSLATE MODE (RU -> EN) ================= */
+let trOrder, trIndex, trScore;
+
+function startTranslate(){
+  trOrder = shuffle(WORDS);
+  trIndex = 0;
+  trScore = 0;
+  renderTranslateQuestion();
+}
+
+function renderTranslateQuestion(){
+  if(trIndex >= trOrder.length){ renderResults(trScore, trOrder.length, startTranslate); return; }
+  const item = trOrder[trIndex];
+
+  root.innerHTML = `
+    <div class="progress-row"><span>Слово ${trIndex+1} из ${trOrder.length}</span><span>Счёт: ${trScore}</span></div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${(trIndex/trOrder.length)*100}%"></div></div>
+    <p style="color:var(--ink-soft); margin-bottom:8px; font-size:0.9rem;">Напиши слово по-английски:</p>
+    <p class="prompt-word" style="font-size:1.5rem;">${item.m}</p>
+    <div class="fill-input-row">
+      <input type="text" id="trInput" placeholder="type in English..." autocomplete="off">
+      <button class="btn" id="trCheckBtn">Проверить</button>
+    </div>
+    <div class="feedback" id="trFeedback"></div>
+    <div class="footer-row"><span></span><button class="btn secondary" id="trNextBtn" style="display:none;">Далее</button></div>
+  `;
+
+  const input = document.getElementById("trInput");
+  const checkBtn = document.getElementById("trCheckBtn");
+  const fb = document.getElementById("trFeedback");
+  const nextBtn = document.getElementById("trNextBtn");
+
+  function check(){
+    input.disabled = true;
+    checkBtn.disabled = true;
+    if(isAnswerCorrect(input.value, item.w)){
+      fb.textContent = "Верно!";
+      fb.className = "feedback good";
+      trScore++;
+    } else {
+      fb.textContent = `Правильный ответ: ${item.w}`;
+      fb.className = "feedback bad";
+    }
+    nextBtn.style.display = "inline-block";
+  }
+
+  checkBtn.addEventListener("click", check);
+  input.addEventListener("keydown", e=>{ if(e.key==="Enter") check(); });
+  nextBtn.addEventListener("click", ()=>{ trIndex++; renderTranslateQuestion(); });
+  input.focus();
+}
+
+/* ================= STORY WITH GAPS ================= */
+// Each [[n]] marker corresponds to WORDS[n] — words appear in the same
+// order as the WORDS array, once each, in their base dictionary form.
+const STORY_TEMPLATE = `Garcia had barely slept, scanning feed after feed, almost ready to [[0]] the whole team to come look over her shoulder one more time. [[1]] was written all over the suspect's face when Hotch finally sat down across from him — though JJ wasn't sure if it was real or simply performance for the cameras. His sudden, very public [[2]] felt staged, a show of humility built for the reporters waiting outside. To the unsub himself, his own code of conduct seemed [[3]], a set of rules he would never break, however strong the case against him grew.
+
+By midweek the tip line was completely [[4]], and Garcia could barely keep up with the calls. The pattern in the earlier murders made Reid's stomach turn: the killer liked to [[5]] small objects into the ground at every scene, a signature detail no one outside the BAU had been told about. "Let's [[6]] everybody for a briefing," Hotch said, and the team gathered around the murder board. Reid believed the unsub's [[7]] to return to each site was part of a ritual he couldn't resist, no matter how carefully he tried to hide it.
+
+When they finally located the storage unit, Morgan had to [[8]] the rusted door open with a crowbar. Garcia's earlier analysis began to [[9]] almost immediately — she needed another hour before she could confirm the match. "Keep him on the line," Hotch told JJ. "[[9]] him as long as you can." Once the trace finally came back, it was [[10]]: there was nowhere left for him to run.
+
+Back at the station, Garcia pulled up [[11]] footage of the parking lot, hours of grainy video compressed into a few short minutes. Rossi noticed the suspect's lips were [[12]], cracked from days spent hiding outdoors with little water, and his hands, though surprisingly [[13]], trembled slightly as he lit a cigarette. The jury would later [[14]] him of the earlier charges, though everyone on the team suspected there was more he hadn't confessed to. Still, Reid managed to [[15]] during the questioning, steady and precise even as the suspect tried to rattle him.
+
+It turned out the man had never acted alone — a handful of [[16]] had helped him dispose of evidence over the years, loyal to him the way a cult follows its leader. "I could [[17]] every one of them," Morgan muttered, though of course he never would. Strangely, one piece of the puzzle came from a woman who'd once worked as a [[18]] at the very hospital where the first victim had been born.
+
+The suspect grew visibly [[19]] the moment Prentiss mentioned the hospital's name. "Don't call her a [[20]]," he snapped, when Rossi described the victim's old job — an odd, old-fashioned word that told them more about the unsub's upbringing than he realized. Forensics later confirmed the rope at the scene was woven from [[21]], a detail the lab flagged as unusual. When he finally spoke again, his voice came out thin and [[22]], nothing like the confident man from the interrogation tapes. Through the rifle's [[23]], the tactical team watched the house for any sign of movement before Hotch gave the signal. None of them were quite sure how to [[24]] the subject of what came next — but by morning, the case was finally closed.`;
+
+function startStory(){
+  const parts = STORY_TEMPLATE.split(/\[\[(\d+)\]\]/g);
+  let html = `
+    <div class="story-summary" id="storySummary">Впиши слово в словарной форме (как в списке) по первой букве-подсказке, даже если грамматика текста требует другой формы. Когда заполнишь все пропуски — нажми «Проверить всё».</div>
+    <div class="story-text">
+  `;
+  parts.forEach((part, i)=>{
+    if(i % 2 === 0){
+      html += part.replace(/\n\n/g, "</p><p>");
+    } else {
+      const idx = parseInt(part, 10);
+      const word = WORDS[idx].w;
+      html += `<span class="blank-wrap"><span class="hint-letter">${word[0]}</span><input type="text" class="story-input" data-idx="${idx}" size="${Math.max(4, word.length)}" autocomplete="off"><span class="correct-hint" id="hint-${idx}"></span></span>`;
+    }
+  });
+  html += `</div>
+    <div class="story-actions">
+      <button class="btn secondary" id="storyRestartBtn">Новый текст</button>
+      <button class="btn" id="storyCheckBtn">Проверить всё</button>
+    </div>
+  `;
+  root.innerHTML = html;
+
+  document.getElementById("storyCheckBtn").addEventListener("click", checkStory);
+  document.getElementById("storyRestartBtn").addEventListener("click", startStory);
+}
+
+function checkStory(){
+  const inputs = document.querySelectorAll(".story-input");
+  let correctCount = 0;
+  const seen = new Set();
+  inputs.forEach(inp=>{
+    const idx = parseInt(inp.dataset.idx, 10);
+    const word = WORDS[idx].w;
+    inp.disabled = true;
+    const ok = isAnswerCorrect(inp.value, word);
+    if(ok) correctCount++;
+    inp.classList.add(ok ? "correct" : "incorrect");
+    if(!ok){
+      const hintEl = document.getElementById(`hint-${idx}`);
+      if(hintEl) hintEl.textContent = `→ ${word}`;
+    }
+  });
+  const summary = document.getElementById("storySummary");
+  summary.innerHTML = `Результат: <strong>${correctCount} из ${inputs.length}</strong> верно. Неверные слова подписаны рядом с полем.`;
+  document.getElementById("storyCheckBtn").disabled = true;
+  window.scrollTo({top:0, behavior:"smooth"});
+}
+
+/* ================= RESULTS ================= */
+function renderResults(score, total, restartFn, isMatch){
+  root.innerHTML = `
+    <div class="results">
+      <div class="big">${isMatch ? "✓" : score + " / " + total}</div>
+      <p>${isMatch ? "Все пары найдены." : (score===total ? "Отличный результат!" : "Хорошая практика — можно повторить ещё раз.")}</p>
+      <button class="btn" id="restartBtn">Пройти ещё раз</button>
+    </div>
+  `;
+  document.getElementById("restartBtn").addEventListener("click", restartFn);
+}
+
+/* ================= INIT ================= */
+function startMode(mode){
+  if(mode==="quiz") startQuiz();
+  else if(mode==="fill") startFill();
+  else if(mode==="match") startMatch();
+  else if(mode==="translate") startTranslate();
+  else if(mode==="story") startStory();
+}
+
+startMode("quiz");
+</script>
+</body>
+</html>
